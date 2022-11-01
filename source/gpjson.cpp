@@ -250,8 +250,9 @@ namespace GPJson {
         }
 
         const auto &type = jdoc.object().value("type").toString();
+        transform(type.begin(), type.end(), type.begin(), ::tolower);
         features.clear();
-        if (type == "FeatureCollection") {
+        if (type == "featurecollection") {
             if (!jdoc.object().contains("features"))
             {
                 errorInfo = "FeatureCollection must have a features property";
@@ -274,7 +275,7 @@ namespace GPJson {
                 features.list.push_back(fea);
             }
         }
-        else if (type == "Feature")
+        else if (type == "feature")
         {
             std::shared_ptr<GPJson::Feature> fea = std::shared_ptr<GPJson::Feature>(new GPJson::Feature);
             if(!parse<GPJson::Feature>(jdoc,*fea,errorInfo))
@@ -307,15 +308,20 @@ namespace GPJson {
         obj.insert("type",element.type);
         std::string str = element.type;
         std::transform(str.begin(),str.end(),str.begin(),::tolower);
-        if(str == "sheet" || str == "binary" || str == "uri" || str == "matrix")
+        if(str == "sheet" || str == "binary" || str == "uri" || str == "matrix" )
         {
-            obj.insert("fields",element.fields);
+            obj.insert("attributes",element.attributes);
             Json::JsonArray array;
             for(GPJson::rowData row : element.source)
             {
                 array.push_back(row);
             }
             obj.insert("source",array);
+        }
+        else if( str == "sequence"  )
+        {
+            obj.insert("attributes",element.attributes);
+            obj.insert("source",Json::JsonValue::Null);
         }
         return Json::JsonDocument(obj);
     }
@@ -330,9 +336,9 @@ namespace GPJson {
         obj2.insert("type",element.dataset.type);
         std::string str = element.dataset.type;
         std::transform(str.begin(),str.end(),str.begin(),::tolower);
-        if(str == "sheet" || str == "binary" || str == "uri" || str == "matrix")
+        if(str == "sheet" || str == "binary" || str == "uri" || str == "matrix" )
         {
-            obj2.insert("fields",element.dataset.fields);
+            obj2.insert("attributes",element.dataset.attributes);
             Json::JsonArray array;
             for(GPJson::rowData row : element.dataset.source)
             {
@@ -340,6 +346,12 @@ namespace GPJson {
             }
             obj2.insert("source",array);
         }
+        else if( str == "sequence"  )
+        {
+            obj.insert("attributes",element.dataset.attributes);
+            obj.insert("source",Json::JsonValue::Null);
+        }
+        return Json::JsonDocument(obj);
 
         obj.insert("DataSet",obj2);
         obj.insert("properties",element.properties);

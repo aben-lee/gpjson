@@ -1,0 +1,127 @@
+EgJSON格式说明
+ The EgJSON Format Specification
+EgJson 格式说明
+
+Author： aben Lee （Email：aben.lee@foxmail.com）
+作者：李晓斌 Email：aben.lee@foxmail.com
+Revision: 0.2
+版本：0.2
+Date: 2015-02-14
+日期：2015年2月14日
+Abstract：EgJSON is a geophysics data process interchange format based on JavaScript Object Notation(JSon)
+        Note: EgJSON is design for Eageo Designer sofware data stream.
+摘要：EaJSON 是以JavaScript（JavaScript Object Notation——Json）对象表征的地球物理数据交换格式。
+Copyright： Copyright 2015 by Authors & Eageo Limited. 
+版权所有：版权归作者和Eageo公司所有
+
+1. 介绍
+
+EaJSON 是为了适合各种地球物理数据结构进行编码的格式.EgJSON对象可以表示时间、地点和地球物理属性集合。EgJson
+支持下面的地球物理特征：时间、地点、物理属性以及所属特征几何集合。Egjson 即可包含一个地球物理数据对象也可以
+包含多种其他地球物理属性。
+
+一个完整的EgJson数据结构总是一个对象（Json术语）。在Eajson对象，对象有名称/值对--也称几何组成。对每个成员来说
+名称总是字符串，成员的值要么是字符串、数字、对象、数组。要么是本文常量中的一个：true、false和null。数组由上面
+所述的元素组成。本说明书中 +-代表Null，
+每个Egjson数据结构中有关键词，Header、Data。
+Header 描述数据的基本信息，包括测区、仪器测点等信息。
+Method : "TEM/CSAMT/seism/gravity/magnetic/Ground Penetrating Radar/  etc.. "  //代表不同的物理方法
+Instrument:" EAGeo_TEM  "  代表测量仪器或处理软件的名称
+
+//todo
+
+
+Data 描述地球物理数据，包括
+Number，数据数目
+Times：测量时间，值为一组数据[],数目必须与Number对应。可以用一定序列增长。如：1.0,3.0,**,代表以间隔2.02增长
+  
+XYZ：代表坐标系下的X,Y,Z，对象与Number，[[x,y,z],[x,y,z],**],若却哪项用+-代表，或Null表示。数目也与Number对应。 
+Values0:代表物理属性或测量值数组[]，测量值与Number对应。
+Values1：代表另外的物理属性[],测量值与Number对应。
+
+Eg的数值值支持javaScrip的基本算法
+
+1.1 举例
+
+EgJson的特征几何
+
+{ type : "EageoDataCollection",
+		type ： EageoData{
+		Header:{
+			Method : "TEM/CSAMT/seismic/gravity/magnetic/Ground Penetrating Radar/  etc.. ",  //代表不同的物理方法
+			Instrument:" EAGeo_TEM  ", // 代表测量仪器或处理软件的名称
+			Region："jiaozuo"   ,    //代表测量区
+			Handler："aben lee"  , //操作员或工作人员
+			
+			emission ：{
+				ShotLocations ：[1.00,20,00,30.00],    //可选，对于地震勘探而言为震源位置  为震源坐标；TEM为发射源 ,
+												//若是球坐标系，代表方位角、仰角和距离，默认为直角坐标系。坐标系参见crs。
+				"waveform":  ,     发送波形
+				"ampere",   ,                  /*发射电流*/
+				"area":    ,                    /* 发射线圈面积  单匝面积*匝数*/
+
+				"turn_off_time":  ,            /*  关断时间, [us].*/
+				"delay_ime":    ,           /*延迟时间*/
+				"Hz":  ,                   /*工作频率,必须工作在整数频率*/
+				"voltage":   ,                 /*发射电压*/
+				"resistance":    ,               /*发射线圈内阻*/	
+
+			}
+			
+			
+			Receiver：{                             //地球物理发射源信息，对于地震代表震源的信息
+				Location： [1.0, 2.0,4.0],    //测点坐标，xyz。对于二维，某值为null，对于地震勘探为检波器位置。
+												//若是球坐标系，代表方位角、仰角和距离，默认为直角坐标系。坐标系参见crs。
+						"synchronization":   ,   //同步方式
+						"sense"    ,             //传感器类型
+						"gain"    ,  			//增益
+						"resistance"   ,               //!< 接收线圈内阻
+						"area"   ,                    //!< 接收线圈面积  单匝面积*匝数
+						"arrangement": ,    /*arangement 测量装置，偶极 中心回圈等 */						
+			}
+			
+			ProcessInfo{         
+				BirthTime:"2015-02-14,12:00" ,//数据生成日期
+				BeforeNode: {
+					name：" " , //前一个处理的节点组件名称
+					adress: "   ", //前一个处理的节点IP地址或物理网卡编号
+					arithmetic： " " ,//计算方法
+					
+				}
+				
+				NextNote：{
+					name：" "  ,// 下一个节点名称
+				
+				}
+			
+			}
+		   
+		   // crs 在这种情况下，它的"type"成员的值必须是字符串"name"。
+		   // 它的"properties"成员的值必须是包含"name"成员的对象。
+		   //这个"name"成员的值必须是标识坐标参考系统的字符串。
+		   //比如“urn:ogc:def:crs:OGC:1.3:CRS84"的OGC CRS的URN应当优先于旧的标识符如"EPSG:4326"得到选用：
+			crs: {
+				type: "name",
+					properties: {
+						name: "urn:ogc:def:crs:OGC:1.3:CRS84"
+				}
+			}
+		}
+		   Data:{
+
+			   Times: [0.1,0.2,**],   //option 测量时间，对于seismic和TEM 方法 测量时间，数目与number对应。单位ms或us，见道头定义
+									 // 可简洁的方式定义，见javaScript的math部分。
+			   XYZ: [[Null,Null,Null]],    //option 三维位置点。若二维，其中一个数值为定值或null。既可实际测量值，也可以反演的剖分点
+			   Values0: [0.3]，物理测量值或反演值。其属性见
+			   Values1：[1.3], 物理属性2
+			   "properties": {
+					Number:10,         // 数据数目 关键词
+					unitT: " ",      //Times的物理意义 us/ms
+					unit0: "value0", //value0的物理属性单位，om,电阻率 V 电压 mV，
+					unit1: "  "  //同Prop0
+					}
+			   
+		   }
+
+	}
+}

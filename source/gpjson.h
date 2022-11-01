@@ -40,10 +40,10 @@ class DataSet
 {
 public:
     std::string type;
-	Json::JsonArray fields;
+	Json::JsonArray attributes;
     std::vector<rowData> source;
+	
 public:
-
     DataSet();
     DataSet(const std::string &type);
     DataSet(const DataSet &other);
@@ -62,8 +62,9 @@ class Feature
 {
 public:
     std::string id;
+	std::vector<double> bbox;   //! option
+	Json::JsonObject properties;
     DataSet dataset;
-    Json::JsonObject properties;
 
     Feature();
     Feature(const int index);
