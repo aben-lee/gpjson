@@ -13,23 +13,34 @@ namespace GPJson {
         properties = Json::JsonObject();
     }
     DataSet::DataSet():type("sheet"){
-        fields = Json::JsonArray();
+        attributes = Json::JsonArray();
     }
     DataSet::DataSet(const std::string &type){
         this->type = type;
-        fields = Json::JsonArray();
+        attributes = Json::JsonArray();
     }
-    DataSet::DataSet(const DataSet &other):type(other.type),fields(other.fields),source(other.source){}
+    DataSet::DataSet(const DataSet &other):type(other.type),attributes(other.attributes),source(other.source){}
     inline DataSet &DataSet::operator=(const DataSet &other){
         type = other.type;
-        fields = other.fields;
+        attributes = other.attributes;
         source = other.source;
         return *this;
     }
     DataSet::~DataSet(){}
     inline bool DataSet::operator==(const DataSet &other) const {
-        return type == other.type && fields == other.fields && source == other.source;
+        return type == other.type && attributes == other.attributes && source == other.source;
+    }
+
+    inline int DataSet::rowCount() const
+    {
+        return source.size();
+    }
+
+    int DataSet::columnCount() const
+    {
+        return source.at(0).size();
     };
+
     inline Json::JsonValue DataSet::at (int row, int column) const{
         if(row < 0 || row >= int(source.size()) || column < 0 || column >= source.at(0).count())
             return Json::JsonValue();
@@ -83,6 +94,26 @@ namespace GPJson {
         int rows = std::min(int(source.size()),array.count());
         for(int r = 0;r < rows; ++r)
             replace(r,column,array.at(r));
+    }
+
+    void DataSet::prependRow(Json::JsonArray array)
+    {
+        insertRow(0,array);
+    }
+
+    void DataSet::prependColumn(Json::JsonArray array)
+    {
+        insertColumn(0,array);
+    }
+
+    void DataSet::appendRow(Json::JsonArray array)
+    {
+        insertRow(rowCount(),array);
+    }
+
+    void DataSet::appendColumn(Json::JsonArray array)
+    {
+        insertColumn(columnCount(), array);
     }
 
     Feature::Feature(){
@@ -140,8 +171,8 @@ namespace GPJson {
             const auto &type = type_1;
             if (type == "sheet" || type == "binary" )
             {
-                if (!jdoc.object().contains("fields")){
-                    errorInfo = "DataSet must have a fields object because of the data type is" + type ;
+                if (!jdoc.object().contains("attributes")){
+                    errorInfo = "DataSet must have a attributes object because of the data type is" + type ;
                     return false;
                 }
             }
@@ -149,8 +180,8 @@ namespace GPJson {
             if ( type == "matrix" ||  type == "uri" || type == "sheet" || type == "binary" )
             {
 
-                if (jdoc.object().contains("fields") && jdoc.object().value("fields").isArray()){
-                    dataset.fields = jdoc.object().value("fields").toArray();
+                if (jdoc.object().contains("attributes") && jdoc.object().value("attributes").isArray()){
+                    dataset.attributes = jdoc.object().value("attributes").toArray();
                 }
                 else {
                     errorInfo = "the dimension value of dataset  MUST be a json array" ;
@@ -249,8 +280,8 @@ namespace GPJson {
             return false;
         }
 
-        const auto &type = jdoc.object().value("type").toString();
-        transform(type.begin(), type.end(), type.begin(), ::tolower);
+        auto type = jdoc.object().value("type").toString();
+        std::transform(type.begin(), type.end(), type.begin(), ::tolower);
         features.clear();
         if (type == "featurecollection") {
             if (!jdoc.object().contains("features"))

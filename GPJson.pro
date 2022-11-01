@@ -1,11 +1,13 @@
-TEMPLATE = app
+
+TEMPLATE = lib
+CONFIG += shared
 CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
 
 SOURCES += \
-    main.cpp \
+#    GPJsonTest.cpp \
     source/gpjson.cpp \
     source/json.cpp
 

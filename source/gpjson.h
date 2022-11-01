@@ -9,6 +9,34 @@
 #include <memory>
 #include <utility>
 
+/************************************************************
+ * Featur, FeatureCollect are container of GPJson data
+ * there are 3 ways to parse or serialize jdoc (GPJson file)
+ * to Features
+ * for exmaple:
+ *     FeatureCollect features;
+ *     QString error;
+ *     if (!parse(jdoc,features,error) ){
+ *      cout << error;  // 输出错误信息
+ *     }
+ * or
+ *     FeatureCollect features;
+ *     QString error;
+ *     if(!parse<GPJson::FeatureCollect>(jdoc,features,error))
+ *     {
+ *       cout << error;  // 输出错误信息
+ *     }
+ * or
+ *     FeatureCollect features;
+ *     QString error;
+ *     if(!feature.fromDeocument(jdoc,error) )
+ *     {
+ *       cout << error;  // 输出错误信息
+ *     }
+ *
+ *
+ * *********************************************************/
+
 namespace GPJson {
 class DataSet;
 class Feature;
@@ -50,12 +78,18 @@ public:
     ~DataSet();
     inline DataSet &operator = (const DataSet &other);
     inline bool operator == (const DataSet &other) const;
+    inline int rowCount() const;
+    inline int columnCount() const;
     inline Json::JsonValue at (int row, int column) const;
     inline bool replace(int row, int column, const Json::JsonValue & value);
     inline Json::JsonArray row(int index) const;
     inline Json::JsonArray column(int index)const;
     inline void insertRow(int row,Json::JsonArray array);
     inline void insertColumn(int column,Json::JsonArray array);
+    inline void prependRow(Json::JsonArray array);
+    inline void prependColumn(Json::JsonArray array);
+    inline void appendRow(Json::JsonArray array);
+    inline void appendColumn(Json::JsonArray array);
 };
 
 class Feature
